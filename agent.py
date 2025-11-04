@@ -1,14 +1,11 @@
 from __future__ import annotations
 import os
 import logging
-# from livekit import rtc
+from livekit import rtc
 from livekit.agents import ( AutoSubscribe, JobContext, WorkerOptions, cli, llm)
+from livekit.agents.multimodal import MultimodalAgent
 from livekit.plugins import openai
-from livekit.plugins import google
 from dotenv import load_dotenv
-import google.generativeai as genai
-from livekit.agents import VoiceAssistant, llm
-from livekit.plugins import openai, silero
 
 
 load_dotenv()
@@ -19,7 +16,7 @@ log.setLevel(logging.INFO)
 
 
 instructions_doc = open("instruction.txt", "r").read()
-log.info(f"Instructions: (isntructions_doc)")
+log.info(f"Instructions: (instructions_doc)")
 
 
 async def main_entry(ctx: JobContext):
@@ -32,18 +29,15 @@ async def main_entry(ctx: JobContext):
 
     participant = await ctx.wait_for_participant()
 
-    ai_model =  VoiceAssistant(
-    vad=silero.VAD.load(),
-    stt=openai.STT(),
-    llm=openai.LLM(model="gpt-4o"),
-    tts=openai.TTS(voice="shimmer"),
-    chat_ctx=llm.ChatContext().append(
-        role="system",
-        text=instructions_doc
-    ),
-)
+    ai_model = openai.realtime.RealtimeModel(
+        instructions=instructions_doc,
+        voice="shimmer",
+        temperature=0.8,
+        modalities=["audio", "text"],
+        api_key=openai_api_key,
+    )
 
-    mutlimodal_assistant = VoiceAssistant(model=ai_model)
+    mutlimodal_assistant = MultimodalAgent(model=ai_model)
     mutlimodal_assistant.start(ctx.room)
 
 
@@ -55,7 +49,7 @@ async def main_entry(ctx: JobContext):
         )
     )
 
-    session_instance.respose.create()
+    session_instance.response.create()
 
 if __name__ == "__main__":
     log.info("About to run main")

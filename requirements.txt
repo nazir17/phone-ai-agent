@@ -1,14 +1,8 @@
-fastapi
-uvicorn[standard]
-python-multipart
 python-dotenv
 twilio
 livekit
 livekit-api
 livekit-agents
-livekit-plugins-deepgram
 livekit-plugins-silero
-livekit-plugins-google
-google-generativeai
-pydantic
-pydantic-settings
+livekit.plugins.openai
+openai
